@@ -1,0 +1,591 @@
+:root {
+  --ink: #16181d;
+  --paper: #ffffff;
+  --sun: #ffd21f;
+  --hot: #ff7a1a;
+  --go: #2fd67a;
+  --bad: #e8413c;
+  --sky-top: #5fb4ff;
+  --sky-bottom: #cdeeff;
+  --font: "Trebuchet MS", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom) 70%);
+  font-family: var(--font);
+  color: var(--paper);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+}
+
+#game canvas {
+  display: block;
+}
+
+#tags,
+#hud,
+#touch {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Outlined, chunky text that reads on sky, dirt and grass alike. */
+#hud,
+.name-tag {
+  text-shadow:
+    0 2px 0 var(--ink),
+    2px 0 0 var(--ink),
+    -2px 0 0 var(--ink),
+    0 -2px 0 var(--ink),
+    0 3px 6px rgb(0 0 0 / 35%);
+  font-weight: 800;
+}
+
+.hud-left {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score-box .label {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  opacity: 0.9;
+}
+
+.score {
+  font-size: 34px;
+  line-height: 1;
+  font-style: italic;
+}
+
+.combo {
+  min-width: 170px;
+}
+
+.combo-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 24px;
+  font-style: italic;
+  color: var(--sun);
+}
+
+.combo-mult {
+  font-size: 30px;
+  color: var(--hot);
+}
+
+.combo-bar {
+  height: 6px;
+  margin: 3px 0 4px;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 25%);
+  overflow: hidden;
+}
+
+.combo-bar i {
+  display: block;
+  height: 100%;
+  background: var(--sun);
+  transform-origin: left;
+}
+
+.combo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+.hud-center {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, 44vw);
+  text-align: center;
+}
+
+.times {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.timer {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  font-style: italic;
+}
+
+.timer.done {
+  color: var(--go);
+}
+
+.best {
+  font-size: 14px;
+  color: var(--sun);
+}
+
+.progress {
+  position: relative;
+  height: 10px;
+  margin-top: 4px;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 35%);
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--hot);
+  transform-origin: left;
+}
+
+.progress-ticks i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ink);
+}
+
+.hud-right {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.speed {
+  font-size: 34px;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+}
+
+.speed-box .unit {
+  margin-left: 4px;
+  font-size: 14px;
+}
+
+.hud-buttons {
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.hud-btn {
+  min-width: 40px;
+  height: 36px;
+  padding: 0 10px;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 800 14px var(--font);
+  text-shadow: none;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+}
+
+.hud-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.hud-btn:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+}
+
+/* Trick popups float up from the middle of the screen. */
+.popups {
+  position: absolute;
+  top: 24%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+}
+
+.popup {
+  text-align: center;
+  font-style: italic;
+  animation: pop 1.6s ease-out forwards;
+}
+
+.popup-title {
+  font-size: clamp(26px, 5vw, 46px);
+  line-height: 1;
+}
+
+.popup-sub {
+  font-size: clamp(18px, 3vw, 26px);
+  color: var(--sun);
+}
+
+.popup-combo .popup-title {
+  color: var(--hot);
+  font-size: clamp(34px, 7vw, 60px);
+}
+
+.popup-crash .popup-title {
+  color: var(--bad);
+  font-size: clamp(36px, 8vw, 64px);
+}
+
+.popup-finish .popup-title {
+  color: var(--go);
+  font-size: clamp(36px, 8vw, 64px);
+}
+
+.popup-lost .popup-title,
+.popup-small .popup-title {
+  font-size: clamp(18px, 3vw, 24px);
+}
+
+.popup-lost .popup-sub {
+  color: var(--bad);
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4) translateY(10px);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  22% {
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+}
+
+.air {
+  position: absolute;
+  top: 16%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(20px, 3.5vw, 30px);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.air.done {
+  color: var(--go);
+}
+
+/* Wheelie meter: keep the needle in the green. */
+.meter {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(320px, 70vw);
+  text-align: center;
+}
+
+.meter-track {
+  position: relative;
+  height: 16px;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--bad), var(--sun) 35%, var(--go) 50%, var(--sun) 65%, var(--bad));
+}
+
+.meter-sweet {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 42%;
+  width: 16%;
+  border: 2px solid var(--paper);
+  border-radius: 6px;
+}
+
+.meter-needle {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  width: 6px;
+  margin-left: -3px;
+  border-radius: 3px;
+  background: var(--paper);
+  box-shadow: 0 0 0 2px var(--ink);
+  transition: left 60ms linear;
+}
+
+.meter-dist {
+  margin-top: 6px;
+  font-size: 24px;
+  font-style: italic;
+}
+
+.meter.sweet .meter-dist {
+  color: var(--go);
+}
+
+.meter-best {
+  font-size: 13px;
+}
+
+.help {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, 92vw);
+  padding: 12px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: rgb(22 24 29 / 78%);
+  text-align: center;
+  text-shadow: none;
+}
+
+.help-title {
+  font-size: 26px;
+  font-style: italic;
+  color: var(--sun);
+}
+
+.help-keys {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 6px 0;
+  font-size: 16px;
+}
+
+.help-tips {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.help-touch {
+  display: none;
+  font-size: 15px;
+}
+
+body.touch .help-keys,
+body.touch .help-tips {
+  display: none;
+}
+
+body.touch .help-touch {
+  display: block;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 26px;
+  margin: 0 2px;
+  padding: 1px 6px;
+  border: 2px solid var(--paper);
+  border-bottom-width: 4px;
+  border-radius: 6px;
+  font: 800 14px var(--font);
+}
+
+.name-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgb(22 24 29 / 45%);
+  font-size: 13px;
+  white-space: nowrap;
+  text-shadow: none;
+  will-change: transform;
+}
+
+/* Touch controls: big thumbs-first buttons, only on touch devices. */
+.touch-group {
+  display: none;
+  position: absolute;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+body.touch .touch-group {
+  display: flex;
+}
+
+.touch-left {
+  left: 18px;
+  bottom: 22px;
+}
+
+.touch-right {
+  right: 18px;
+  bottom: 22px;
+  display: none;
+  grid-template-columns: auto auto;
+  grid-template-areas:
+    ". trick"
+    "brake throttle";
+  align-items: end;
+  justify-items: center;
+}
+
+body.touch .touch-right {
+  display: grid;
+}
+
+.touch-brake {
+  grid-area: brake;
+}
+
+.touch-throttle {
+  grid-area: throttle;
+}
+
+.touch-top {
+  top: 64px;
+  left: 16px;
+}
+
+.touch-btn {
+  width: 76px;
+  height: 76px;
+  border: 3px solid rgb(22 24 29 / 70%);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 35%);
+  color: var(--ink);
+  font: 800 30px var(--font);
+  touch-action: none;
+}
+
+.touch-btn.held {
+  background: rgb(255 210 31 / 85%);
+}
+
+.touch-throttle {
+  width: 92px;
+  height: 92px;
+}
+
+.touch-trick {
+  grid-area: trick;
+  width: 64px;
+  height: 64px;
+}
+
+.touch-respawn {
+  width: 48px;
+  height: 48px;
+  font-size: 22px;
+}
+
+#loading {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  font-weight: 800;
+  font-style: italic;
+  text-shadow: 0 3px 0 var(--ink);
+}
+
+#loading.error {
+  padding: 24px;
+  font-size: 18px;
+  text-align: center;
+}
+
+#debug {
+  position: fixed;
+  left: 8px;
+  bottom: 6px;
+  font: 12px ui-monospace, monospace;
+  color: var(--ink);
+  text-shadow: none;
+  pointer-events: none;
+}
+
+/* The tuning panel sits under the score, clear of the HUD buttons. */
+.lil-gui.autoPlace {
+  top: 110px;
+  left: 12px;
+  right: auto;
+  max-height: calc(100% - 130px);
+}
+
+@media (max-width: 640px) {
+  .score,
+  .speed {
+    font-size: 26px;
+  }
+  .timer {
+    font-size: 22px;
+  }
+  .hud-center {
+    top: 96px;
+    width: 64vw;
+  }
+  .touch-btn {
+    width: 66px;
+    height: 66px;
+  }
+  .touch-throttle {
+    width: 80px;
+    height: 80px;
+  }
+  .touch-group {
+    gap: 10px;
+  }
+  .hud-btn {
+    min-width: 34px;
+    height: 32px;
+    padding: 0 7px;
+    font-size: 12px;
+  }
+}

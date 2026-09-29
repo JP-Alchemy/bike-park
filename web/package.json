@@ -1,0 +1,26 @@
+{
+  "name": "bike-park-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Bike Park browser client: Three.js rendering over the WebAssembly simulation.",
+  "scripts": {
+    "wasm": "node ../scripts/build-wasm.mjs",
+    "wasm:dev": "node ../scripts/build-wasm.mjs --dev",
+    "dev": "npm run wasm && vite",
+    "build": "npm run wasm && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node tests/smoke.mjs"
+  },
+  "dependencies": {
+    "lil-gui": "^0.21.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "playwright": "1.56.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1"
+  }
+}

@@ -1,0 +1,15 @@
+[package]
+name = "bike-sim"
+version = "0.1.0"
+edition = "2021"
+description = "Deterministic 2D riding simulation shared by the Bike Park client (WebAssembly) and server."
+publish = false
+
+[dependencies]
+# `enhanced-determinism` makes Rapier bit-for-bit identical across platforms,
+# which is what lets the browser (wasm32) and the server (x86_64) agree.
+rapier2d = { version = "0.36.0", features = ["enhanced-determinism"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Pure-Rust math so trig gives the same bits on every platform (std uses the system libm).
+libm = "0.2"
