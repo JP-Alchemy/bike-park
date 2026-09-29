@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  sim:
+    name: Simulation (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo clippy -p bike-sim-wasm --target wasm32-unknown-unknown -- -D warnings
+      - run: cargo test --workspace
+
+  web:
+    name: Web client, WebAssembly and determinism
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          # Must match the wasm-bindgen version pinned in crates/sim-wasm/Cargo.toml.
+          tool: wasm-bindgen@0.2.129
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+      - name: Build (wasm, typecheck, bundle)
+        working-directory: web
+        run: npm run build
+      - name: Native and WebAssembly simulations agree bit for bit
+        run: node scripts/check-determinism.mjs
+      - name: Install Chromium
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+      - name: Smoke test the build in a browser
+        working-directory: web
+        run: npm run smoke
